@@ -29,5 +29,35 @@ proxies_list = [
         "senha": "joxs7lxx9orx",
         "host": "brd.superproxy.io",
         "porta": 33335
+    },
+    {
+        "usuario": "brd-customer-hl_2d185c9c-zone-proxy_brazil6",
+        "senha": "odph7s827vdl",
+        "host": "brd.superproxy.io",
+        "porta": 33335
+    },
+    {
+        "usuario": "brd-customer-hl_2d185c9c-zone-proxy_brazil7",
+        "senha": "n5pv446u4d38",
+        "host": "brd.superproxy.io",
+        "porta": 33335
+    },
+    {
+        "usuario": "brd-customer-hl_2d185c9c-zone-proxy_brazil8",
+        "senha": "zsogd8mp67zh",
+        "host": "brd.superproxy.io",
+        "porta": 33335
+    },
+    {
+        "usuario": "brd-customer-hl_2d185c9c-zone-proxy_brazil9",
+        "senha": "iqnytntdh542",
+        "host": "brd.superproxy.io",
+        "porta": 33335
+    },
+    {
+        "usuario": "brd-customer-hl_2d185c9c-zone-proxy_brazil10",
+        "senha": "o8sgdodr0z4k",
+        "host": "brd.superproxy.io",
+        "porta": 33335
     }
 ]

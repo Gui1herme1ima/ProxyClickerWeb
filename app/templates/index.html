@@ -51,21 +51,20 @@
         stopRequested = false;
 
         let cliquesConcluidos = 0;
+        const start = document.createElement('P');
+        start.textContent = 'Cliques Iniciados!';
+        start.style.color = "green"
+        messagesDiv.appendChild(start);
 
         function fazerClique() {
 
-            if (cliquesConcluidos == 0){
-            const start = document.createElement('P');
-            start.textContent = 'Cliques Iniciados!';
-            start.style.color = "green"
-            messagesDiv.appendChild(start);
-        }
             if (stopRequested) {
                 isCliqueRunning = false;
                 const stopMessage = document.createElement('p');
                 stopMessage.textContent = "Clique interrompido pelo usuário.";
                 stopMessage.style.color = "red"
                 messagesDiv.appendChild(stopMessage);
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
                 document.getElementById('startButton').disabled = false;
                 document.getElementById('stopButton').disabled = true;
                 return;
@@ -107,6 +106,8 @@
                 messageContainer.appendChild(messageTime);
                 messagesDiv.appendChild(messageContainer);
 
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
                 if (data.message != "Clique concluído com sucesso!"){
                     cliquesConcluidos--;
                 }
@@ -118,6 +119,7 @@
                     finalMessage.textContent = "Cliques concluídos!";
                     finalMessage.style.color = "blue"
                     messagesDiv.appendChild(finalMessage);
+                    messagesDiv.scrollTop = messagesDiv.scrollHeight;
                     isCliqueRunning = false;
                     document.getElementById('startButton').disabled = false;
                     document.getElementById('stopButton').disabled = true;
