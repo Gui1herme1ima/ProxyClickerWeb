@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+    <div class="form-container">
+        <h2>Iniciar Cliques</h2>
+        <form id="cliqueForm">
+            <label for="url">URL:</label>
+            <input type="text" id="url" name="url" required>
+            <small id="urlError" class="error-message">O link deve começar com "http://" ou "https://".</small>
+            <label for="num_cliques">Numero de Cliques:</label>
+            <input type="number" id="num_cliques" name="num_cliques" required>
+            <label for="tempo_medio">Tempo Médio (segundos):</label>
+            <input type="number" step="0.1" id="tempo_medio" name="tempo_medio" required>
+            <button type="submit" id="startButton">INICIAR</button>
+            <button type="button" id="stopButton" disabled>PARAR</button>
+        </form>
+    </div>
+    <div class="messages-container">
+        <h2>Log de Cliques</h2>
+        <div id="messages" class="messages">
+            <p>Nenhum clique realizado ainda.</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    let isCliqueRunning = false;  // Controla se o processo de cliques está ativo
+    let stopRequested = false;    // Controla se o usuário solicitou a parada
+
+    document.getElementById('cliqueForm').addEventListener('submit', function (event) {
+        event.preventDefault();  // Impede o envio tradicional do formulário
+
+        const url = document.getElementById('url').value;
+        const numCliques = document.getElementById('num_cliques').value;
+        const tempoMedio = document.getElementById('tempo_medio').value;
+
+        // Valida a URL
+        if (!url.startsWith('http://') && !url.startsWith('https://')) {
+            document.getElementById('url').classList.add('error');
+            document.getElementById('urlError').style.display = 'block';
+            return;  // Impede o envio do formulário
+        } else {
+            document.getElementById('url').classList.remove('error');
+            document.getElementById('urlError').style.display = 'none';
+        }
+
+        const messagesDiv = document.getElementById('messages');
+        messagesDiv.innerHTML = '';
+
+        isCliqueRunning = true;
+        stopRequested = false;
+
+        let cliquesConcluidos = 0;
+
+        function fazerClique() {
+
+            if (cliquesConcluidos == 0){
+            const start = document.createElement('P');
+            start.textContent = 'Cliques Iniciados!';
+            start.style.color = "green"
+            messagesDiv.appendChild(start);
+        }
+            if (stopRequested) {
+                isCliqueRunning = false;
+                const stopMessage = document.createElement('p');
+                stopMessage.textContent = "Clique interrompido pelo usuário.";
+                stopMessage.style.color = "red"
+                messagesDiv.appendChild(stopMessage);
+                document.getElementById('startButton').disabled = false;
+                document.getElementById('stopButton').disabled = true;
+                return;
+            }
+
+            if (isCliqueRunning){
+                document.getElementById('startButton').disabled = true;
+                document.getElementById('stopButton').disabled = false;
+            }
+
+            fetch('/start_clicks', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `url=${encodeURIComponent(url)}&num_cliques=${numCliques}&tempo_medio=${tempoMedio}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                cliquesConcluidos++;
+               
+                const messageContainer = document.createElement('div');
+                messageContainer.classList.add('message-container');
+
+                const messageText = document.createElement('span');
+                messageText.textContent = `Clique ${cliquesConcluidos}/${numCliques}: ${data.message}`;
+
+                const messageTime = document.createElement('span');
+                const now = new Date();
+                const year = String(now.getFullYear()).padStart(2, '0');
+                const month = String(now.getMonth()+1).padStart(2, '0');
+                const day = String(now.getDate()).padStart(2, '0');
+                const hours = String(now.getHours()).padStart(2, '0');
+                const minutes = String(now.getMinutes()).padStart(2, '0');
+                const seconds = String(now.getSeconds()).padStart(2, '0');
+                messageTime.textContent = `${day}/${month}/${year} - ${hours}:${minutes}:${seconds}`;
+
+                messageContainer.appendChild(messageText);
+                messageContainer.appendChild(messageTime);
+                messagesDiv.appendChild(messageContainer);
+
+                if (data.message != "Clique concluído com sucesso!"){
+                    cliquesConcluidos--;
+                }
+
+                if (cliquesConcluidos < numCliques) {
+                    setTimeout(fazerClique, tempoMedio * 1000);  // Espera antes do próximo clique
+                } else {
+                    const finalMessage = document.createElement('p');
+                    finalMessage.textContent = "Cliques concluídos!";
+                    finalMessage.style.color = "blue"
+                    messagesDiv.appendChild(finalMessage);
+                    isCliqueRunning = false;
+                    document.getElementById('startButton').disabled = false;
+                    document.getElementById('stopButton').disabled = true;
+                }
+            })
+            .catch(error => {
+                const errorMessage = document.createElement('p');
+                errorMessage.textContent = `Erro: ${error.message}`;
+                messagesDiv.appendChild(errorMessage);
+                isCliqueRunning = false;
+                document.getElementById('startButton').disabled = false;
+                document.getElementById('stopButton').disabled = true;
+            });
+        }
+
+        fazerClique();
+    });
+
+    document.getElementById('stopButton').addEventListener('click', function () {
+        if (isCliqueRunning) {
+            stopRequested = true;
+            document.getElementById('stopButton').disabled = true;
+        }
+    });
+</script>
+{% endblock %}
