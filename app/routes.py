@@ -47,7 +47,7 @@ def start_clicks():
                 timeout=60,
                 verify=False
             )
-            if response.status_code == 200:
+            if response.status_code == 200 or response.status_code == 403:
                 cliques_concluidos += 1
                 message = f"Clique concluído com sucesso!"
             else:
