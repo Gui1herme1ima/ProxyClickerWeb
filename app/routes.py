@@ -56,7 +56,7 @@ def start_clicks():
             else:
                 message = f"Erro no clique. Status Code: {response.status_code}"
         except Exception as e:
-            message = f"Erro: {e}"
+            message = f"Erro: {e} Status Code:{response.status_code}"
 
         tentativas_totais += 1
         print(f"Tentativa {tentativas_totais}: {message}")
