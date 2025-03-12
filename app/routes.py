@@ -45,7 +45,7 @@ def start_clicks():
                 url,
                 headers=headers,
                 proxies={"http": proxy, "https": proxy},
-                timeout=10,
+                timeout=time+10,
                 verify=False
             )
             if response.status_code == 200:
