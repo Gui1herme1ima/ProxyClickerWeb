@@ -45,7 +45,7 @@ def start_clicks():
                 url,
                 headers=headers,
                 proxies={"http": proxy, "https": proxy},
-                timeout=tempo+10,
+                timeout=60,
                 verify=False
             )
             if response.status_code == 200:
@@ -59,11 +59,11 @@ def start_clicks():
         tentativas_totais += 1
         print(f"Tentativa {tentativas_totais}: {message}")
 
-        # Libera a proxy após a conclusão dos cliques
-        with proxies_lock:
-            proxies_available.append(proxy_info)
-
         return jsonify({
             "message": message,
             "cliques_concluidos": cliques_concluidos
         })
+
+        # Libera a proxy após a conclusão dos cliques
+        with proxies_lock:
+            proxies_available.append(proxy_info)
