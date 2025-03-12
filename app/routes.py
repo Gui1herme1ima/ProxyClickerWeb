@@ -7,12 +7,12 @@ import time
 import requests
 from urllib3.exceptions import InsecureRequestWarning
 from threading import Lock
+
 requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)
 
 # Lista de proxies disponíveis
 proxies_available = proxies_list.copy()
 proxies_lock = Lock()  # Para garantir acesso seguro à lista de proxies
-
 
 @app.route('/')
 def home():
@@ -24,20 +24,20 @@ def start_clicks():
     num_cliques_desejados = int(request.form['num_cliques'])
     tempo = float(request.form['tempo_medio'])
 
+    # Aloca uma proxy para a sessão
+    with proxies_lock:
+        if not proxies_available:
+            return jsonify({"message": "Todas as proxies estão em uso. Tente novamente mais tarde."}), 503
+        proxy_info = proxies_available.pop(0)  # Remove a primeira proxy disponível
+        print(proxy_info)
+
     cliques_concluidos = 0
     tentativas_totais = 0
 
-    # Aloca uma proxy para a sessão
-    
-    proxy_info = proxies_available.pop(0)  # Remove a primeira proxy disponível
-    print(f"-----------------------------------------------------------------\n{proxy_info['usuario']}")
-
     while cliques_concluidos < num_cliques_desejados:
-
         headers = random.choice(headers_list)
         proxy = f"http://{proxy_info['usuario']}-session-{random.randint(1, 1000)}:{proxy_info['senha']}@{proxy_info['host']}:{proxy_info['porta']}"
 
-        # Realiza o clique
         try:
             response = requests.get(
                 url,
@@ -57,11 +57,13 @@ def start_clicks():
         tentativas_totais += 1
         print(f"Tentativa {tentativas_totais}: {message}")
 
+        # Simula o tempo de espera
+        time.sleep(tempo)
+
         # Libera a proxy após a conclusão dos cliques
         with proxies_lock:
             proxies_available.append(proxy_info)
-        # Simula o tempo de espera
-        time.sleep(tempo)
+
         return jsonify({
             "message": message,
             "cliques_concluidos": cliques_concluidos
