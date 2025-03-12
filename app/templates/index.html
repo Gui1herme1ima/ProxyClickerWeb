@@ -113,7 +113,7 @@
                 }
 
                 if (cliquesConcluidos < numCliques) {
-                    setTimeout(fazerClique, tempoMedio * 1000);  // Espera antes do próximo clique
+                    fazerClique();
                 } else {
                     const finalMessage = document.createElement('p');
                     finalMessage.textContent = "Cliques concluídos!";
