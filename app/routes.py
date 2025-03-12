@@ -57,14 +57,11 @@ def start_clicks():
         tentativas_totais += 1
         print(f"Tentativa {tentativas_totais}: {message}")
 
-        # Simula o tempo de espera
-        time.sleep(tempo)
-        print(f"Aguardando {tempo} segundos...")
-
         # Libera a proxy após a conclusão dos cliques
         with proxies_lock:
             proxies_available.append(proxy_info)
-
+        # Simula o tempo de espera
+        time.sleep(tempo)
         return jsonify({
             "message": message,
             "cliques_concluidos": cliques_concluidos
