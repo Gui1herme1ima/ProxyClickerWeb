@@ -35,8 +35,7 @@ def start_clicks():
     tentativas_totais = 0
 
     while cliques_concluidos < num_cliques_desejados:
-        # Simula o tempo de espera
-        time.sleep(tempo)
+        
         headers = random.choice(headers_list)
         proxy = f"http://{proxy_info['usuario']}-session-{random.randint(1, 1000)}:{proxy_info['senha']}@{proxy_info['host']}:{proxy_info['porta']}"
 
