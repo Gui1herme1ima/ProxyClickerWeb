@@ -58,11 +58,11 @@ def start_clicks():
         tentativas_totais += 1
         print(f"Tentativa {tentativas_totais}: {message}")
 
+        # Libera a proxy após a conclusão dos cliques
+        with proxies_lock:
+            proxies_available.append(proxy_info)
+
         return jsonify({
             "message": message,
             "cliques_concluidos": cliques_concluidos
         })
-
-        # Libera a proxy após a conclusão dos cliques
-        with proxies_lock:
-            proxies_available.append(proxy_info)
