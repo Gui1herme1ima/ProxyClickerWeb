@@ -1,3 +1,6 @@
+from queue import Queue
+from threading import Lock
+
 # Lista de proxies
 proxies_list = [
     {
@@ -61,3 +64,13 @@ proxies_list = [
         "porta": 33335
     }
 ]
+
+# Fila de proxies disponíveis
+proxies_queue = Queue()
+
+# Adiciona todas as proxies na fila
+for proxy in proxies_list:
+    proxies_queue.put(proxy)
+
+# Lock para garantir que a alocação de proxies seja thread-safe
+proxy_lock = Lock()
