@@ -1,18 +1,13 @@
 from flask import render_template, request, jsonify
 from app import app
 from headers import headers_list
-from proxies import proxies_list
+import proxies
 import random
-import time
 import requests
 from urllib3.exceptions import InsecureRequestWarning
 from threading import Lock
 
 requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)
-
-# Lista de proxies disponíveis
-proxies_available = proxies_list.copy()
-proxies_lock = Lock()  # Para garantir acesso seguro à lista de proxies
 
 def get_ip_geolocation(ip):
     """
@@ -67,13 +62,17 @@ def start_clicks():
     tentativas_totais = 0
 
     while cliques_concluidos < num_cliques_desejados:
+        # Bloqueia o acesso à fila de proxies para garantir thread-safety
+        with proxies.proxy_lock:
+            if not proxies.proxies_queue.empty():
+                proxy_info = proxies.proxies_queue.get()  # Obtém a próxima proxy disponível
+            else:
+                return jsonify({
+                    "message": "Todas as proxies estão em uso. Tente novamente mais tarde.",
+                    "cliques_concluidos": cliques_concluidos
+                })
 
-        # Aloca uma proxy para a sessão
-        with proxies_lock:
-            if not proxies_available:
-                return jsonify({"message": "Todas as proxies estão em uso. Tente novamente mais tarde."}), 503
-            proxy_info = proxies_available.pop(0)  # Remove a primeira proxy disponível
-            print(f"------------------------------------------------------------\nProxy selecionada: {proxy_info['usuario']}")
+        print(f"------------------------------------------------------------\nProxy selecionada: {proxy_info['usuario']}")
         
         headers = random.choice(headers_list)
         # Monta a string da proxy
@@ -81,18 +80,11 @@ def start_clicks():
 
         # Obtém o IP da proxy
         proxy_ip = get_proxy_ip(proxy)
-        if not proxy_ip:
-            with proxies_lock:
-                proxies_available.append(proxy_info)  # Devolve a proxy para a lista
-            continue
 
         # Verifica se o IP é do Brasil e obtém a cidade
         country, city = get_ip_geolocation(proxy_ip)
         if country != "BR":
             print(f"Proxy com IP {proxy_ip} não é do Brasil ({country}, {city}). Buscando nova proxy...")
-            with proxies_lock:
-                proxies_available.append(proxy_info)  # Devolve a proxy para a lista
-            continue  # Volta ao início do loop para buscar uma nova proxy
 
         print(f"Proxy com IP {proxy_ip} é do Brasil ({city}). Prosseguindo...")
 
@@ -119,11 +111,11 @@ def start_clicks():
         tentativas_totais += 1
         print(f"Tentativa {tentativas_totais}: {message}")
 
-        # Libera a proxy após a conclusão dos cliques
-        with proxies_lock:
-            proxies_available.append(proxy_info)
+        # Libera a proxy de volta para a fila após o uso
+        with proxies.proxy_lock:
+            proxies.proxies_queue.put(proxy_info)
 
         return jsonify({
-            "message": message,
-            "cliques_concluidos": cliques_concluidos
-        })
+        "message": message,
+        "cliques_concluidos": cliques_concluidos
+    })
