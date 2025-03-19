@@ -37,7 +37,7 @@ def get_proxy_ip(proxy):
     """
     try:
         response = requests.get(
-            'https://ipinfo.io/json',
+            'https://api.ipify.org?format=json',
             proxies={"http": proxy, "https": proxy},
             timeout=10,
             verify=False
