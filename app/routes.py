@@ -88,8 +88,7 @@ def start_clicks():
 
             # Libera a proxy de volta para a fila (pois não será usada)
             with proxies.proxy_lock:
-        
-            proxies.proxies_queue.put(proxy_info)
+                proxies.proxies_queue.put(proxy_info)
         
             continue  # Volta ao início do loop para buscar uma nova proxy
         
