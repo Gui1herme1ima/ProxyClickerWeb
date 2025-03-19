@@ -86,6 +86,13 @@ def start_clicks():
         if country != "BR":
             print(f"Proxy com IP {proxy_ip} não é do Brasil ({country}, {city}). Buscando nova proxy...")
 
+            # Libera a proxy de volta para a fila (pois não será usada)
+            with proxies.proxy_lock:
+        
+            proxies.proxies_queue.put(proxy_info)
+        
+            continue  # Volta ao início do loop para buscar uma nova proxy
+        
         print(f"Proxy com IP {proxy_ip} é do Brasil ({city}). Prosseguindo...")
 
         try:
