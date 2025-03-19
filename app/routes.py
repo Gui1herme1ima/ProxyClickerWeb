@@ -57,11 +57,18 @@ def home():
 def start_clicks():
     url = request.form['url']
     num_cliques_desejados = int(request.form['num_cliques'])
+    android_cliques = int(request.form['android_cliques'])
+    iphone_cliques = int(request.form['iphone_cliques'])
+
+    print(android_cliques)
+    print(iphone_cliques)
 
     cliques_concluidos = 0
     tentativas_totais = 0
+    ultimo_dispositivo = None  # Controla o último dispositivo usado
 
     while cliques_concluidos < num_cliques_desejados:
+
         # Bloqueia o acesso à fila de proxies para garantir thread-safety
         with proxies.proxy_lock:
             if not proxies.proxies_queue.empty():
@@ -74,7 +81,6 @@ def start_clicks():
 
         print(f"------------------------------------------------------------\nProxy selecionada: {proxy_info['usuario']}")
         
-        headers = random.choice(headers_list)
         # Monta a string da proxy
         proxy = f"http://{proxy_info['usuario']}-session-{random.randint(1, 1000)}:{proxy_info['senha']}@{proxy_info['host']}:{proxy_info['porta']}"
 
@@ -86,8 +92,37 @@ def start_clicks():
         if country != "BR":
             print(f"Proxy com IP {proxy_ip} não é do Brasil ({country}, {city}). Buscando nova proxy...")
 
+            # Libera a proxy de volta para a fila (pois não será usada)
+            with proxies.proxy_lock:
+                proxies.proxies_queue.put(proxy_info)
         
+            continue  # Volta ao início do loop para buscar uma nova proxy
+
         print(f"Proxy com IP {proxy_ip} é do Brasil ({city}). Prosseguindo...")
+
+        # Seleciona o dispositivo (Android ou iPhone)
+        if android_cliques > 0 and iphone_cliques > 0:
+            headers = random.choice(headers_list)
+            print(headers)
+
+            if 'android' in headers['User-Agent'].lower():
+                dispositivo = 'android'
+            elif 'iphone' in headers['User-Agent'].lower():
+                dispositivo = 'iphone'
+            else:
+                continue
+        
+        elif android_cliques > 0 and iphone_cliques == 0:
+            dispositivo = 'android'
+            headers = random.choice([h for h in headers_list if dispositivo in h['User-Agent'].lower()])
+
+        elif android_cliques == 0 and iphone_cliques > 0:
+            dispositivo = 'iphone'
+            headers = random.choice([h for h in headers_list if dispositivo in h['User-Agent'].lower()])
+        else:
+            break  # Todos os cliques foram concluídos
+
+        # Seleciona um header correspondente ao dispositivo
 
         try:
             response = requests.get(
@@ -118,5 +153,6 @@ def start_clicks():
 
         return jsonify({
         "message": message,
-        "cliques_concluidos": cliques_concluidos
-    })
+        "cliques_concluidos": cliques_concluidos,
+        "dispositivo": dispositivo
+})
