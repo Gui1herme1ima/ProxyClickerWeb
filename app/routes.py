@@ -84,22 +84,6 @@ def start_clicks():
         # Monta a string da proxy
         proxy = f"http://{proxy_info['usuario']}-session-{random.randint(1, 1000)}:{proxy_info['senha']}@{proxy_info['host']}:{proxy_info['porta']}"
 
-        # Obtém o IP da proxy
-        proxy_ip = get_proxy_ip(proxy)
-
-        # Verifica se o IP é do Brasil e obtém a cidade
-        country, city = get_ip_geolocation(proxy_ip)
-        if country != "BR":
-            print(f"Proxy com IP {proxy_ip} não é do Brasil ({country}, {city}). Buscando nova proxy...")
-
-            # Libera a proxy de volta para a fila (pois não será usada)
-            with proxies.proxy_lock:
-                proxies.proxies_queue.put(proxy_info)
-        
-            continue  # Volta ao início do loop para buscar uma nova proxy
-
-        print(f"Proxy com IP {proxy_ip} é do Brasil ({city}). Prosseguindo...")
-
         # Seleciona o dispositivo (Android ou iPhone)
         if android_cliques > 0 and iphone_cliques > 0:
             headers = random.choice(headers_list)
