@@ -11,6 +11,16 @@
             <input type="number" id="num_cliques" name="num_cliques" required>
             <label for="tempo_medio">Tempo Médio (segundos):</label>
             <input type="number" step="0.1" id="tempo_medio" name="tempo_medio" required>
+
+            <!-- Barra ajustável para Android e iPhone -->
+            <label for="device_distribution">Distribuição de Dispositivos:</label>
+            <div class="slider-container">
+                <input type="range" id="device_distribution" name="device_distribution" min="0" max="100" value="50">
+                <div id="device_distribution_display">
+                    <span id="android_count">0</span> Android / <span id="iphone_count">0</span> iPhone
+                </div>
+            </div>
+
             <button type="submit" id="startButton">INICIAR</button>
             <button type="button" id="stopButton" disabled>PARAR</button>
         </form>
@@ -24,6 +34,30 @@
 </div>
 
 <script>
+    // Atualiza a exibição da distribuição de dispositivos
+    const deviceSlider = document.getElementById('device_distribution');
+    const androidCount = document.getElementById('android_count');
+    const iphoneCount = document.getElementById('iphone_count');
+    const numCliquesInput = document.getElementById('num_cliques');
+
+    // Função para atualizar a distribuição de dispositivos
+    const updateDeviceDistribution = () => {
+        const totalCliques = parseInt(numCliquesInput.value);
+        const androidCliques = Math.round((deviceSlider.value / 100) * totalCliques);
+        const iphoneCliques = totalCliques - androidCliques;
+
+        androidCount.textContent = androidCliques;
+        iphoneCount.textContent = iphoneCliques;
+    };
+
+    // Atualiza a distribuição ao alterar o número de cliques ou a barra
+    numCliquesInput.addEventListener('input', updateDeviceDistribution);
+    deviceSlider.addEventListener('input', updateDeviceDistribution);
+
+    // Inicializa a distribuição ao carregar a página
+    updateDeviceDistribution();
+
+
     let isCliqueRunning = false;  // Controla se o processo de cliques está ativo
     let stopRequested = false;    // Controla se o usuário solicitou a parada
 
@@ -33,6 +67,8 @@
         const url = document.getElementById('url').value;
         const numCliques = document.getElementById('num_cliques').value;
         const tempoMedio = document.getElementById('tempo_medio').value;
+        let androidCliques = parseInt(androidCount.textContent);
+        let iphoneCliques = parseInt(iphoneCount.textContent);
 
         // Valida a URL
         if (!url.startsWith('http://') && !url.startsWith('https://')) {
@@ -80,7 +116,7 @@
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
                 },
-                body: `url=${encodeURIComponent(url)}&num_cliques=${numCliques}&tempo_medio=${tempoMedio}`
+                body: `url=${encodeURIComponent(url)}&num_cliques=${numCliques}&tempo_medio=${tempoMedio}&android_cliques=${androidCliques}&iphone_cliques=${iphoneCliques}`
             })
             .then(response => response.json())
             .then(data => {
@@ -108,8 +144,23 @@
 
                 messagesDiv.scrollTop = messagesDiv.scrollHeight;
 
+                    if (data.dispositivo == "android"){
+                        androidCliques--;
+                        console.log("Entrou android")
+                    }
+                    else{
+                        iphoneCliques--;
+                        console.log("Entrou iphone")
+                    }
+
                 if (data.message != "Clique concluído com sucesso!"){
                     cliquesConcluidos--;
+                    if (data.dispositivo == "android"){
+                        androidCliques++;
+                    }
+                    else{
+                        iphoneCliques++;
+                    }
                 }
 
                 if (cliquesConcluidos < numCliques) {
