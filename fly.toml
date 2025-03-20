@@ -1,0 +1,23 @@
+app = "app"  # Substitua pelo nome do seu app no Fly.io
+
+[build]
+  build_command = "pip install -r requirements.txt"
+
+[http_service]
+  internal_port = 5000  # Porta que sua aplicação usa internamente (Flask usa 5000 por padrão)
+  force_https = true    # Força o uso de HTTPS
+
+  [[http_service.ports]]
+    handlers = ["http"]
+    port = 80  # Porta HTTP externa
+
+  [[http_service.ports]]
+    handlers = ["tls", "http"]
+    port = 443  # Porta HTTPS externa
+
+[env]
+  FLASK_ENV = "production"
+  SECRET_KEY = "sua-chave-secreta-aqui"  # Use `fly secrets set` para segredos
+
+[deploy]
+  release_command = "python manage.py migrate"  # Comando para rodar antes do deploy (opcional)
