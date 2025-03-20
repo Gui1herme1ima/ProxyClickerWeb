@@ -6,6 +6,7 @@ import random
 import requests
 from urllib3.exceptions import InsecureRequestWarning
 from threading import Lock
+import time
 
 requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)
 
@@ -37,7 +38,7 @@ def get_proxy_ip(proxy):
     """
     try:
         response = requests.get(
-            'https://api.ipify.org?format=json',
+            'https://ipinfo.io/json',
             proxies={"http": proxy, "https": proxy},
             timeout=10,
             verify=False
@@ -74,12 +75,11 @@ def start_clicks():
             if not proxies.proxies_queue.empty():
                 proxy_info = proxies.proxies_queue.get()  # Obtém a próxima proxy disponível
             else:
-                return jsonify({
-                    "message": "Todas as proxies estão em uso. Tente novamente mais tarde.",
-                    "cliques_concluidos": cliques_concluidos
-                })
+                print("Proxys em cooldown, aguarde...")
+                time.sleep(5)
+                continue
 
-        print(f"------------------------------------------------------------\nProxy selecionada: {proxy_info['usuario']}")
+        print(f"------------------------------------------------------------\nProxy selecionada: {proxy_info['id']}")
         
         # Monta a string da proxy
         proxy = f"http://{proxy_info['usuario']}-session-{random.randint(1, 1000)}:{proxy_info['senha']}@{proxy_info['host']}:{proxy_info['porta']}"
@@ -89,7 +89,7 @@ def start_clicks():
 
         # Verifica se o IP é do Brasil e obtém a cidade
         country, city = get_ip_geolocation(proxy_ip)
-        if country != "BR":
+        if country not in ["BR"]:
             print(f"Proxy com IP {proxy_ip} não é do Brasil ({country}, {city}). Buscando nova proxy...")
 
             # Libera a proxy de volta para a fila (pois não será usada)
