@@ -32,7 +32,7 @@ def get_ip_geolocation(ip):
         print(f"Erro ao processar os dados da API para o IP {ip}: {e}")
         return None, None
 
-def get_proxy_ip(proxy):
+def get_proxy_ipinfo(proxy):
     """
     Obtém o IP externo usando a proxy fornecida.
     """
@@ -45,7 +45,43 @@ def get_proxy_ip(proxy):
         )
         response.raise_for_status()
         ip_data = response.json()
-        return ip_data['ip']
+        return ip_data.get('ip')
+    except Exception as e:
+        print(f"Erro ao obter IP da proxy {proxy}: {e}")
+        return None
+    
+def get_proxy_ipify(proxy):
+    """
+    Obtém o IP externo usando a proxy fornecida.
+    """
+    try:
+        response = requests.get(
+            'https://api64.ipify.org?format=json',
+            proxies={"http": proxy, "https": proxy},
+            timeout=10,
+            verify=False
+        )
+        response.raise_for_status()
+        ip_data = response.json()
+        return ip_data.get('ip')
+    except Exception as e:
+        print(f"Erro ao obter IP da proxy {proxy}: {e}")
+        return None
+
+def get_proxy_ipapi(proxy):
+    """
+    Obtém o IP externo usando a proxy fornecida.
+    """
+    try:
+        response = requests.get(
+            'http://ip-api.com/json/',
+            proxies={"http": proxy, "https": proxy},
+            timeout=10,
+            verify=False
+        )
+        response.raise_for_status()
+        ip_data = response.json()
+        return ip_data.get('query')
     except Exception as e:
         print(f"Erro ao obter IP da proxy {proxy}: {e}")
         return None
@@ -85,7 +121,17 @@ def start_clicks():
         proxy = f"http://{proxy_info['usuario']}-session-{random.randint(1, 1000)}:{proxy_info['senha']}@{proxy_info['host']}:{proxy_info['porta']}"
 
         # Obtém o IP da proxy
-        proxy_ip = get_proxy_ip(proxy)
+        proxyAPI =random.choice([1,2,3])
+        
+        if proxyAPI == 1:
+            proxy_ip = get_proxy_ipinfo(proxy)
+            print("API: IPinfo")
+        elif proxyAPI == 2:
+            proxy_ip = get_proxy_ipify(proxy)
+            print("API: IPify")
+        else:
+            proxy_ip = get_proxy_ipapi(proxy)
+            print("API: IP-API")
 
         # Verifica se o IP é do Brasil e obtém a cidade
         country, city = get_ip_geolocation(proxy_ip)
