@@ -16,12 +16,12 @@ def get_ip_geolocation(ip):
     Retorna o país e a cidade do IP.
     """
     try:
-        response = requests.get(f'https://geolocation-db.com/json/{ip}')
+        response = requests.get(f'http://ip-api.com/json/{ip}')
         response.raise_for_status()
         geo_data = response.json()
         
         # Extrai o país e a cidade
-        country = geo_data.get('country_code')
+        country = geo_data.get('countryCode')
         city = geo_data.get('city')
 
         return country, city
